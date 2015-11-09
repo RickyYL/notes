@@ -225,21 +225,59 @@ data Tree a = Node {
 type Forest a = [Tree a]
 ```
 
-## Zipper 
+##一般化的代数数据类型
+
 ```
-data Zipper a = Zipper [a] a [a]
-                deriving Show
+data Exp = ValInt  Int
+         | ValBool Bool
+         | Add (Exp a) (Exp a)
+         | Equ (Exp a) (Exp a)
+         deriving (Show, Eq)
+```
 
-fromList :: 
+以上为一个 DSL，包括数字和布尔类型，还包括一组运算和逻辑判断。为了保证表达式的正确性，还令 `Exp` 类型参数化，增加了参数类型 `a`，称为*虚幻类型*（phantom type）。
 
+这样以来，在 `eval` 时，需要对 `Exp` 的 `Equl` 增加一个匹配，需要用 `Either` 区别加法和判断相等运算：
 
+```
+eval :: Exp -> Either Int Bool
+eval (ValInt  a) = Left  a
+eval (ValBool b) = Right b
+eval (Add e1 e2) = case eval e1 of
+                   Left a -> case eval e2 of
+                             Left b -> Left (a + b)
+eval (Equ e1 e2) = case eval e1 of
+                   Left a -> case eval e2 of
+                             Left b -> Right (a == b)
+```
 
+通过 GADT，可以重写之前的类型定义：
 
+```
+data Exp a where
+    ValInt  :: Int  -> Exp Int
+    ValBool :: Bool -> Exp Bool
+    Add     :: Exp Int -> Exp Int -> Exp Int
+    Equ     :: Exp Int -> Exp Int -> Exp Bool
+```
 
+有了明确的类型限定以后，也可以重写 `eval` 函数：
 
+```
+eval :: Exp a -> a
+eval (ValInt  i) = i
+eval (ValBool b) = b
+eval (Add e1 e2) = eval e1 + eval e2
+eval (Equ e1 e2) = eval e1 == eval e2
+```
 
+如此一来，不合法的表达式就能通过类型系统检查出来，不会导致未定义行为。GADT 定义数据类型和常规方法的区别在于：GADT 里，需要明确指定每个构造器的类型。但也享受了更大的自由，因为不会由编译器自动推导而受限。
 
+##类型的 kind
 
+kind 是对类型的进一步抽象。
+
+看不懂了。
 
 
 
