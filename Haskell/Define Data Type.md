@@ -46,10 +46,10 @@ data Book   = Book Name Author ISBN Price deriving (Show, Eq)
 
 ```
 data Book = Book {
-	name   :: Name,
-	author :: Author,
-	isbn   :: ISBN,
-	price  :: Price
+    name   :: Name,
+    author :: Author,
+    isbn   :: ISBN,
+    price  :: Price
 }
 ```
 
@@ -75,8 +75,162 @@ safeDiv a b = Just (div a b)
 
 ####类型构造器
 
-例如，`Maybe Bool` 是一个类型，它有三个值：`Nothing`, `Just True` 和 `Just False`。像 `Maybe` 这样需要其他类型作为参数构造一个新的类型的类型，称为*类型构造器*。
+例如，`Maybe Bool` 是一个类型，它有三个值：`Nothing`, `Just True` 和 `Just False`。像 `Maybe` 这样需要其他类型作为参数构造一个新的类型的类型，称为*类型构造器*。根据类型构造器，可以将类型化为不同的 kind。类型构造器是基于类型的运算，所有类型通常记为 `*`，意为所有类型。这里类型构造器的类型就称为 kind。
 
+另外一个重要的类型是 `Either`，需要两个不同的类型为输入。
+```
+data Either a b = Left a | Right b
+
+> :k Either
+Either :: * -> * -> *
+```
+
+例如，构造列表的时候，不能用不同类型，此时可以使用 `Either` 来存放两种类型。
+```
+> :t [Left 90, Right "Cheated", Left 95, Right "Illness"]
+~ :: Num a => [Either a [Char]]
+```
+
+相比于 `Maybe` 类型，如果用 `Either`，我们不仅可以知道有异常发生，还能知道异常的一些具体信息。
+
+当需要把 `Either` 中的值映射为另一个值时，要为 `Left` 和 `Right` 分别提供一个函数，这两个函数返回类型相同。
+```
+either :: (a->c) -> (b->c) -> Either a b -> c
+either f _ (Left  x) = f x
+either _ g (Right y) = g x
+```
+
+我们可以把两个列表合并，或者将一个列表拆开：
+```
+disjoint as bs = map Left as ++ map Right bs
+
+partition = foldr (either left right) ([],[])
+            where left  a (l, r) = (a:l, r)
+                  right a (l, r) = (l, a:r)
+```
+
+下面定义一个 `Piar` 类：
+```
+data Pair a b = Pair a b
+pfst (Pair a b) = a
+psnd (Pair a b) = b
+```
+
+####函数类型
+
+函数类型也是有类型构造器的，是 `(->)`，`a -> b` 也可以写作 `(->) a b`。
+
+###递归类型
+
+所谓递归类型，就是定义时用到了自身的类。
+
+例如我们可以递归定义自然数，根据皮亚诺公理：
+```
+data Nat = Zero | Succ Nat (Show, Eq)
+
+natToint :: Nat -> Int
+natToint Zero = 0
+natToint (Succ n) = 1 + natToint n
+
+intTonat :: Int -> Nat
+intTonat 0 = Zero
+intTonat n = Succ (intTonat (n-1))
+```
+
+###杂合定义类型
+
+```
+data Shape = Circle Float
+           | Rect Float Float
+           deriving (Show, Eq)
+
+data Shape = Circle {
+             radius :: Float
+         } | Rect {
+             len    :: Float ,
+             width  :: Float
+         } deriving (Show, Eq)
+
+area :: Shape -> Float
+area (Circle r) = pi * r ^ 2
+area (Rect a b) = a * b
+```
+
+```
+data BoolExp = TRUE
+             | FALSE
+             | IF BoolExp BoolExp BoolExp
+
+eval :: BoolExp -> Bool
+eval TRUE  = True
+eval FALSE = False
+eval (IF con b1 b2) | eval con == True  = eval b1
+                    | eval con == False = eval b2
+```
+
+```
+> :i []
+data [] a = [] | a : [a]
+```
+
+```
+data List a = Nil a
+            | Cons a (List a)
+            deriving (Show, Eq)
+
+lhead :: List a -> a
+lhead (Nil a)     = a
+lhead (Const a _) = a
+
+listTomylist Nil         = []
+listTomylist (Cons x xs) = x : (listTomylist xs)
+
+mylistTolist []     = Nil
+mylistTolist (x:xs) = Cons x (mylistTolist xs)
+```
+
+##类型的同构 Isomorphism
+
+         +----<----+
+     +->-+    g    +->-+
+id_A | A |         | B | id_B
+     +-<-+    f    +-<-+
+         +---->----+
+
+如上两个类型 A B 为同构。记为 A ~= B。
+
+##使用 `newtype` 定义新类型
+
+`newtype` 只能定义单一构造器，并且该构造器只能有一个参数。可以理解其为 `type` 和 `data` 效率上的折衷。
+
+##树
+
+```
+data Tree a = Leaf a
+            | Node a (Tree a) (Tree a)
+
+data Tree a = Leaf
+            | Node a (Tree a) (Tree a)
+
+data Tree a = Node a [Tree a]
+
+data Tree a = Node [a] [Tree a]
+
+-- Haskell Data.Tree 的定义
+
+data Tree a = Node {
+              rootLabel :: a,
+              subForest :: Forest a
+              }
+type Forest a = [Tree a]
+```
+
+## Zipper 
+```
+data Zipper a = Zipper [a] a [a]
+                deriving Show
+
+fromList :: 
 
 
 
