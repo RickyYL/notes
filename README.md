@@ -1,4 +1,8 @@
 #Ricky's Studying Notes
 
-All these notes are for personal use. But they might be useful for you guys too.
+##Reading List
 
+###Fall 2015
+
+* 深入探索 C++ 对象模型
+* Haskell 函数是编程入门
