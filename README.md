@@ -4,6 +4,7 @@
 
 ###Fall 2015
 
-* 深入探索 C++ 对象模型
+* Inside the C++ Object Model
+* Haskell 函数式编程入门
 * Learn You a Haskell for Great Good!
-* Haskell 函数是编程入门
+* Write Yourself a Scheme in 48 Hours
