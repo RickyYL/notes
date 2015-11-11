@@ -10,6 +10,8 @@
 
 ### 作为 `Functor` 的 IO 操作
 
+IO 操作是一个 `Functor`，实现如下：
+
 ```
 instance Functor IO where
 	fmap f action = do
@@ -34,3 +36,49 @@ import Data.List
 main = do Line <- fmap (intersperse '-' . reverse . map toUpper) getLine
 	      putStrLn line
 ```
+
+###作为 `Functor` 的函数
+
+`(->) r` 也是一个 `Functor`，实现如下：
+
+```
+import Control.Monad.Instances
+
+instance Functor ((->) r) where
+	fmap f g ::（a -> b) -> (r -> a) -> (r -> b)
+	fmap f g = f $ g
+```
+
+这表明，在一个函数上映射一个函数，结果肯定是一个函数。它的类型告诉我们，它接受一个 `(a->b)` 的函数，和一个 `(r->a)` 的函数，返回一个 `(r->b)` 的函数。这与函数组合运算符 `(.)` 的作用是一样的。很明显，对函数做 `fmap` 就是函数组合。
+
+这一事实改变了我们的想法：那些表现得更像是计算而不是容器的东西，也是函子。
+
+## `Functor` 定律
+
+* 定律一：`fmap id = id`。
+* 定律二：`fmap (f.g) = fmap f . fmap g`。
+
+如果我们确认某类型遵守这两条定律，就能认为对于映射，它会有相同的基本行为。
+
+###违反定律
+
+```
+data CMaybe a = CNothing | CJust Int a deriving Show
+
+instance Functor CMaybe where
+    fmap f CNothing = CNothing
+    fmap f (CJust counter x) = CJust (counter + 1) (f x)
+```
+
+`CMaybe` 类并不遵守函子定律，虽然 Haskell 并不强制要求遵守函子定律，但是这会导致使用中存在问题。函子应当只进行映射，而不干其他事情，这会让我们的代码更加抽象，更容易扩展。
+
+## `Applicative` 类型类
+
+```
+import Control.Applicative
+
+class Functor f => Applicative f where
+	pure  :: a -> f a
+	(<*>) :: f (a -> b) -> f a -> f b
+```
+
