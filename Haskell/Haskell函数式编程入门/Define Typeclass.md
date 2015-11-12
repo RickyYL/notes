@@ -186,5 +186,22 @@ Just 2
 (<*>) :: f (a -> b) -> f a -> f b    -- Applicative
 ```
 
-`Applicative` 除了具有 `Functor` 的特性以外，能做的只是调用函子容器内的函数。因此也常称之为 `Applicative Functor`。
+`Applicative` 除了具有 `Functor` 的特性以外，能做的只是调用函子容器内的函数。因此也常称之为 `Applicative Functor`。为了更方便的地实现这个特性，GHC 库中实现了一组函数，将一个函数运算的参数分别放置于实现了 `Applicative` 类型类的容器中：
 
+```
+liftA :: Applicative f => (a -> b) -> f a -> f b
+liftA f a = pure f <*> a
+
+liftA2 :: Applicative f => (a -> b -> c) -> f a -> f b -> f c
+lifta2 f a b = f <$> a <*> b
+```
+
+除此之外，`Applicative` 还定义了另外两个运算符：
+
+```
+(*>) :: f a -> f b -> f b
+u *> v = pure (const id) <*> u <*> v
+
+(<*) :: f a -> f b -> f a
+u <* v = pure const <*> u <*> v
+```

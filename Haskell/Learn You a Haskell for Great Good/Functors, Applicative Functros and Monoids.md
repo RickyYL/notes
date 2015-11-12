@@ -82,3 +82,175 @@ class Functor f => Applicative f where
 	(<*>) :: f (a -> b) -> f a -> f b
 ```
 
+`pure` 是一个接受任意类型值，并返回一个包裹了该值的 `applicative` 值的一元函数。或者说，它接受一个值，把它放在某个默认的上下文中——生成带有同样值的最小上下文。
+
+### `Maybe Applicative Functor`
+
+实现如下：
+
+```
+instance Applicative Maybe where
+	pure 	         = Just
+	Nothing  <*> _   = Nothing
+	(Just f) <*> arg = fmap f arg
+```
+
+从中我们可以看出如下几点：
+* `f` 是一个单类型参数的 `Applicative Functor`。
+* `pure` 的作用就是把任意值包裹为 `Applicative` 值，这里包裹函数就是 `Just` 值构造器。
+* `<*>` 有两条规则：
+  * 我们不能从 `Nothing` 中取出函数，因为它里面没有函数。
+  * 如果第一个参数不是 `Nothing`，那么就从中取出函子，应用到右边的值上。
+
+### `Applicative` 风格
+
+`Control.Applicative` 中 `fmap` 运算符：
+
+```
+(<$>) :: (Functor f) => (a -> b) -> f a -> f b
+f <$> x = fmap f x
+```
+
+如果我们想把函数 `f` 应用到三个 `Applicative` 值上，可以写成 `f <$> x <*> y <*> z`。如果参数是普通值的话，就写成 `f x y z`。例如：
+
+```
+> (++) "Ricky" "Lee"
+"RickyLee"
+
+> (++) <$> Just "Ricky" <*> Just "Lee"
+Just "RickyLee"
+```
+
+###列表也是 `Applicative`
+
+列表的 `Applicative` 实现：
+
+```
+instance Applicative [] where
+	pure x = [x]
+	fs <*> xs = [f x | f <- fs, x <- xs]
+```
+
+用 `Applicative` 风格实现列表处理，往往是 list comprehenion 不错的替代品。例如：
+
+```
+> [x*y | x <- [2,5,10], y <- [8,10,11]]
+[16,20,22,40,50,55,80,100,110]
+
+> (*) <$> [2,5,10] <*> [8,10,11]
+[16,20,22,40,50,55,80,100,110]
+```
+
+风格上的不同见仁见智。
+
+### IO 也是 `Applicative`
+
+IO 的实现如下：
+
+```
+instance Applicative IO where
+	pure    = return
+	a <*> b = do f <- a
+                 x <- b
+                 return (f x)
+```
+
+考虑如下一段代码：
+
+```
+myAction :: IO String
+myAction = do a <- getLine
+              b <- getLine
+			  return $ a ++ b
+```
+
+等价为
+
+```
+myAction :: IO String
+myAction = (++) <$> getLine <*> getLine
+```
+
+###函数也是 `Applicative`
+
+函数 `((->) r)` 的实现如下：
+
+```
+instance Applicative ((->) r) where
+	pure x  = (\_ -> x)
+	f <*> g = \x -> (f . g) x
+```
+
+考虑如下几个例子：
+
+```
+> pure 3 "blah"
+3
+
+> (+) <$> (+3) <*> (*100) $ 5
+508
+
+> (\x y z -> [x,y,z]) <$> (+3) <*> (*10) <*> (/2) $ 5
+[8.0,50.0,2.5]
+```
+
+### `zip` 列表
+
+之前我们看到列表的 `Applicative` 表现为笛卡尔乘积，如果想做加法的话，可以使用 `ZipList`，定义如下：
+
+```
+import Control.Applicative
+
+instance Applicative ZipList where
+	pure x = ZipList (repeat x)
+	ZipList fs <*> ZipList xs = ZipList (zipWith (\f x -> f x) fs xs)
+```
+
+## `Applicative` 定律
+
+* `pure f <*> x = fmap f x`
+* `pure id <*> v = v`
+* `pure (.) <*> x <*> v <*> w = u <*> (v <*> w)`
+* `pure f <*> pure x = pure (f x)`
+* `u <*> pure y = pure ($ y) <*> u`
+
+## `Applicative` 的实用函数
+
+### `liftA2`
+
+```
+import Control.Applicative
+
+liftA2 :: Applicative f => (a -> b -> c) -> f a -> f b -> f c
+liftA2 f a b = f <$> a <*> b
+```
+
+对 `liftA2` 类型的理解：
+
+* `(a -> b -> c)`：接受一个二元函数为参数。这个二元函数接受两个普通值，返回另一个。
+* `(f a -> f b -> f c)`：返回一个二元函数。这个二元函数接受两个函子，返回另一个函子。
+
+看一个实例：
+
+```
+> liftA2 (:) (Just 3) (Just [4])
+Just [3,4]
+```
+
+* `liftA2 (:)`：成为了一个二元函数 `(f a -> f b -> f c)`，接受两个函子为参数，返回一个函子。
+* `(Just 3) (Just [4])`：为二元函数 `liftA2 (:)` 的两个函子参数。
+* `Just [3,4]`：返回的函子。
+
+###`sequenceA`
+
+```
+sequenceA :: Applicative f => [f a] -> f [a]
+sequenceA []     = pure []
+sequenceA (x:xs) = (:) <$> x <*> sequenceA xs
+
+-- another definition for sequenceA
+
+sequenceA = foldr (liftA2 (:)) (pure [])
+```
+
+`sequenceA` 接受任意数目的 applicetive 值，合并成为一个 applicative 值。
