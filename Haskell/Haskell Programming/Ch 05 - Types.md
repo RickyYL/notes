@@ -1,0 +1,4 @@
+# Types
+
+## What are types?
+
