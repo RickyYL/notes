@@ -10,3 +10,4 @@
 * Write Yourself a Scheme in 48 Hours
 * Flex and Bison
 * Structure and Interpretation of Computer Programs
+* Haskell Programming from First Principles
