@@ -135,9 +135,10 @@ instance Functor Maybe where
     fmap f (Just x) = Just (f x)
 ```
 
-实现函子类型类，要满足如下定律：
-* `fmap id = id`
-* `fmap (f . g) = fmap f . fmap g`
+### `Functor` 定律
+
+* 单位元：`fmap id = id`
+* 分配率：`fmap (f . g) = fmap f . fmap g`
 
 ### `Applicative` 类型类
 
@@ -147,8 +148,8 @@ instance Functor Maybe where
 import Control.Applicative
 
 class Functor f => Applicative f where
-    pure  :: a -> f a
-    (<*>) :: f (a -> b) -> f a -> f b
+    pure  :: a -> f a                   -- 封装一个函数
+    (<*>) :: f (a -> b) -> f a -> f b   -- 将封装的函数取应用到封装的值上
 ```
 
 以下是 `Maybe` 类实现 `Applicative` 类型类的声明：
@@ -193,15 +194,97 @@ liftA :: Applicative f => (a -> b) -> f a -> f b
 liftA f a = pure f <*> a
 
 liftA2 :: Applicative f => (a -> b -> c) -> f a -> f b -> f c
-lifta2 f a b = f <$> a <*> b
+liftA2 f a b = f <$> a <*> b         -- liftA2 f a b = pure f <*> a <*> b
 ```
 
 除此之外，`Applicative` 还定义了另外两个运算符：
 
 ```
 (*>) :: f a -> f b -> f b
-u *> v = pure (const id) <*> u <*> v
+(*>) = liftA2 (const id)    -- 先计算第一个参数并忽略其结果，计算第二个参数并返回
 
 (<*) :: f a -> f b -> f a
-u <* v = pure const <*> u <*> v
+(<*) = liftA2 const         -- 相反
+```
+
+列表也实现了 `Applicative` 类型类，行为与列表生成差不多：
+
+```
+instance Applicative [] where
+    pure x = [x]
+    fs <*> xs = [ f x | f <- fs, x <- xs ]
+```
+
+`((->) r)` 也可以实现为 `Applicative`：
+
+```
+instance Applicative ((->) r) where
+
+    pure :: a -> (r -> a)
+    pure x _ = x
+    
+    (<*>) :: (r -> (a -> b)) -> (r -> a) -> (r -> b)
+    (<*>) f g x = (f . g) x
+```
+
+### `Applicative` 定律
+
+* 单位元：`pure id <*> v = v`
+* 复合定律：`pure (.) <*> u <*> v <*> w = u <*> (v <*> w)`
+* 同态定律：`pure f <*> pure x = pure (f x)`
+* 互换定律：`u <*> pure y = pure ($ y) <*> u`
+
+### `Alternative` 类型类
+
+定义如下：
+
+```
+infixl 3 <|>
+
+class Applicative f => Alternative f where
+    empty :: f a
+    (<|>) :: f a -> f a -> f a        
+```
+
+该运算符可以被用来在一些数据中选择合理的值，根据不同的数据类型行为有所区分，例如：
+
+```
+> Nothing <|> Nothing <|> Just 1 <|> Just 2
+Just 1
+```
+
+`Maybe` 的实现如下：
+
+```
+instance Alternative Maybe where
+    empty         = Nothing
+    Nothing <|> p = p
+    Just x <|> _  = Just x
+```
+
+列表的实现如下：
+
+```
+instance Alternative [] where
+    empty = []
+    (<|>) = (++)
+```
+
+`Applicative` 还定义了 `some` 与 `many` 函数，定义如下：
+
+```
+-- one or more
+some :: f a -> f [a]
+some f = (:) <$> f <*> many f
+
+-- zero or more
+many :: f a -> f [a]
+many f = some f <|> pure []  
+```
+
+还有一个 `optional` 函数：
+
+```
+optional :: Alternative f => f a -> f (Maybe a)
+optional v = Just <$> v <|> pure Nothing
 ```

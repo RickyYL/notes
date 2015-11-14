@@ -8,3 +8,5 @@
 * Haskell 函数式编程入门
 * Learn You a Haskell for Great Good!
 * Write Yourself a Scheme in 48 Hours
+* Flex and Bison
+* Structure and Interpretation of Computer Programs
