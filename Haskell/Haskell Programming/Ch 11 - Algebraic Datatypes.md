@@ -3,6 +3,7 @@
 ## TODO
 * **11.15** Binary Tree
 * Chapter Exercises
+* Phone Exercise
 
 A type can be thought of as an enumeration of constructors that have zero or more arguments. Haskell offers sum types, product types with record syntax, type aliases, and a special datatype called a newtype that offers a different set of options and constraints from either type synonyms or data declarations. 
 
