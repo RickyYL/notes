@@ -27,11 +27,11 @@ A monoid is a binary associative operation with an identity.
    [1]         [2]       [3]        [4]              [5]
 ```
 
-* **[Monoid]** - The thing we're talking about - monoids. That will end up being the name of our typeclass.
-* **[Binary]** - Means, there will be two of something. 
-* **[Associative]** - This is a property or law that must be satisfied.
-* **[Operation]** - So called because in mathematics, it's usually used as an infix operator, or function. Hence, it's a binary function.
-* **[Identity]** - In this context, we can take this to mean there'll be some value which, when combined with any other value, will always return that other value. 
+* **[1]** - The thing we're talking about - monoids. That will end up being the name of our typeclass.
+* **[2]** - Means, there will be two of something. 
+* **[3]** - This is a property or law that must be satisfied.
+* **[4]** - So called because in mathematics, it's usually used as an infix operator, or function. Hence, it's a binary function.
+* **[5]** - In this context, we can take this to mean there'll be some value which, when combined with any other value, will always return that other value. 
 
 e.g.
 
@@ -49,8 +49,8 @@ mappend mempty x = x
 ```
 
 So in plain English, a monoid is a function that takes two arguments and follows two laws:
-* **Associatity**, means arguments can be regruoped in different orders and give the same result.
-* **Identity**, means there exists some unit values.
+* **Associatity** - means arguments can be regruoped in different orders and give the same result.
+* **Identity** - means there exists some unit values.
 
 `Monoid` is the typeclass that generalizes these laws across types.
 
@@ -62,7 +62,7 @@ So in plain English, a monoid is a function that takes two arguments and follows
 
 Typeclasses give us a way to recognize, organize, and use common functionalities and patterns across types that differ in some ways but also have things in common.
 
-The `Monoid` typeclass recognizes and orders a different pattern than `Num` but the goal is similar. The typeclass merely abstracts that pattern out and makes it general and available to other datatypes taht don't have predefined functions taht do this for you (e.g. `(++)`), including your own datatypes when appropriate.
+The `Monoid` typeclass recognizes and orders a different pattern than `Num` but the goal is similar. The typeclass merely abstracts that pattern out and makes it general and available to other datatypes that don't have predefined functions that do this for you (e.g. `(++)`), including your own datatypes when appropriate.
 
 The typeclass `Monoid` is defined:
 
@@ -75,7 +75,7 @@ class Monoid m where
 ```
 
 * `mappend` is how any two values that inhabit your type can be joined together.
-* `mempty` is the identity value for taht `mappend` operation.
+* `mempty` is the identity value for that `mappend` operation.
 
 ## Examples of using Monoid
 
@@ -93,9 +93,9 @@ instance Monoid [a] where
 
 ## Why Integer doesn't have a Monoid
 
-For integers, in mathematics, both summation and multiplication ar emonoidal, but each type should only have one unique instance for a given typelcass, not two.
+For integers, in mathematics, both summation and multiplication are monoidal, but each type should only have one unique instance for a given typelcass, not two.
 
-Integers form a monoid under summation and multiplication. Similarly we can say taht lists form a monoid under concatenation. Lists have more than one possible monoid, although for now we're only working with concatenation. Several other types do as well. We usually enforce the unique instance rule by using `newtype` to seprate the different monodial behaviors. 
+Integers form a monoid under summation and multiplication. Similarly we can say that lists form a monoid under concatenation. Lists have more than one possible monoid, although for now we're only working with concatenation. Several other types do as well. We usually enforce the unique instance rule by using `newtype` to seprate the different monodial behaviors. 
 
 ### Why newtype?
 

@@ -1,0 +1,242 @@
+# Algebraic Datatypes
+
+## TODO
+* **11.15** Binary Tree
+* Chapter Exercises
+
+A type can be thought of as an enumeration of constructors that have zero or more arguments. Haskell offers sum types, product types with record syntax, type aliases, and a special datatype called a newtype that offers a different set of options and constraints from either type synonyms or data declarations. 
+
+## Data declarations review
+
+```
+    data Bool = False | True
+--  [1]  [2] [3] [4] [5] [6]
+    data [] a = [ ] | a : [a]
+--       [ 7 ]  [8]    [9]
+``` 
+
+* **[1]** - `data` to signal that what follows is a data declaration, or a declaration of a datatype.
+* **[2]** - **Type constructor** (with no arguments).
+* **[3]** - `=` divides the type constructor from its data constructors.
+* **[4]** - **Data constructor**. Here a data constructor that takes no arguments and so is called a **nullary** constructor.
+* **[5]** - `|` denotes a sum type which indicates a logical disjunction in what values can have that type.
+* **[6]** - Constructor for value `True`, another nullary constructor.
+* **[7]** - Type constructor with an argument. An empty list has to have an argument in order to vecome a list of something. `a` is a polymorphic type variable, so the list's argument can be of different types.
+* **[8]** - Data constructor for the empty list.
+* **[9]** - Data constructor that takes two arguments: an `a` and also a `[a]`.
+
+## Data and type constructor
+
+* Type constructors are used only at the type level, in type signatures and typeclass declarations and instances. Types are static and resolve at compile time. 
+* Data constructors construct the values at term level, values you can interact with at runtime. 
+
+Type and data constructors that take no arguemtns are constants. They can only store a fixed type and amount of data. e.g. `Bool`.
+
+However, sometimes we need the flexibility of allowing different types or amounts of data to be sotred in datatypes. When a constructor takes an argument, then it's like a function in at least one sense - it must be applied to become a concrete type or value. 
+
+```
+data Trivial = Trivial
+--     [1]       [2]
+data UnaryTypeCon a = UnaryValueCon a
+--       [3]               [4]
+```
+
+* **[1]** - Type constructor `Trivial` is like a constant value, but at the type level.
+* **[2]** - Data constructor `Trivial` is also like a constant value, but it exists in value, term, or runtime space.
+* **[3]** - Type constructor `UnaryTypeCon` is a type constructor of one argument. It's awaiting a type constant to be applied to, but it has no behavior in the sense that we think of functions as having.
+* **[4]** - Data constructor `UnaryValueCon` is awaiting a value to be applied to. It doesn't behave like a term-level function in the sense of performing an operation on data. It's more like a box to put values into. 
+
+### Type constructors and kinds
+
+e.g. `data [] a = [] | a : [a]`. It must be applied to a concrete type before you have a list. **Kinds** are the types of types, or types one level up. 
+
+## Data constructors and values
+
+```
+data PugType = PugData
+--     [1]       [2]
+data HuskyType a = HuskyData
+--     [3]            [4]
+data DogueDeBordeaux doge = DogueDeBordeaux doge
+--     [5]                      [6]
+```
+
+* **[1]** - `PugType` is the type constructor, but it takes no arguemtns so we can think of it as being a type constant. It enumerates one constructor.
+* **[2]** - `PugData` is the only data constructor for the type `PugType`. It also happens to be a constant value because it takes no argument and stands only for itself. For any function that asks for a `PugType` value, the only value could be `PugData`. 
+* **[3]** - `HuskyType` is the type constructor that takes a single parametrically polymorphic type variable as an arguemnt. It also enumerates one data constructor.
+* **[4]** - `HuskyData` is the data constructor for `HuskyType`. The type variable argument `a` doesn't appear as an argument to `HuskyData` or anywhere else after `=`. That means the type argument `a` is *phantom*, or, has no witness. Hence it's a constant value.
+* **[5]** - `DogueDeBordeaux` is a type constructor and has one type variable.
+* **[6]** - `DogueDeBordeaux` is the long dat aconstructor. The `doge` type variable in the type constructor occurs also in the data constructor. Hence `doge` must equal `doge` appearing before `=`. 
+
+## What's a type and what's data?
+
+* **Types** are static and resolve at compile time, and are known before runtime. Information about types does not persist through to runtime. 
+* **Data** are what we are working with at runtime.
+
+
+* **Compile time** is literally when your program is getting compiled by GHC or checked before execution in a REPL like GHCi. 
+* **Run time** is the actual execution of your program. 
+
+```
+type constructors -- compile time
+-------------------- phase separation
+data constructors -- runtime
+```
+
+Data constructors are ususally generated by the declaration. One tricky bit here is that when data constructors take arguments, those arguments refer to *other types*. Because of this, not everything refered to in a datatype declaration is necessarily generated by that datatype itself.
+
+### Examples
+
+```
+data Price = Price Integer deriving (Eq, Show)
+--    (a)     (b)    [1]
+```
+
+* **(a)** - Type constructor.
+* **(b)** - Data constructor.
+* **[1]** - Type argument.
+
+The value `Price` does not depend solely on this datatype definition. It depends on the type `Integer` as well. If for some reason, `Integer` wasn't in scope, we'd unable to generate `Price` values.
+
+```
+data Manufacturer = Mini | Mazda | Tata deriving (Eq, Show)
+--       (c)        (d)     (e)    (f)
+data Airline = PapuAir | AirChina | ANA deriving (Eq, Show)
+--     (g)       (h)       (i)      (j)
+```
+
+* **(c)** - One type constructor.
+* **(d) (e) (f)** - three data constructors.
+* **(g)** - One type constructor.
+* **(h) (i) (j)** - three data constructors.
+
+`Manufacturer` and `Airline` are each sum types with three data constructors. Each data constructor in these is a possible value of that type and since none of them take arguments, all are generated by their declarations and are more like constant values than constructros.
+
+```
+data Vehicle = Car Manufacturer Price | Plane Airline deriving (Eq, Show)
+--     (k)     (l)     [2]       [3]     (m)    [4]
+```
+
+* **(k)** - Type constructor.
+* **(l) (m)** - Two data constructors.
+* **[2] [3] [4]** - Three type arguments.
+* Two type arguments **[2] [3]** to **(l)**.
+* One type argument **[4]** to **(m)**.
+
+This sum type has data constructors that take arguments. For the type `Vehicle`, the data constructors are `Car` and `Plane`, so a `Vehicle` is either a `Car` value or a `Plane` value. They each take types as arguments.
+
+### Summary
+
+As we've seen, data constructors can take arguments. Those arguments will be specific types, but not specific values. 
+
+In standard Haskell, we cannot quotient out or choose specific inhabitants (values) of types as arguments. e.g. If you accept `Bool` as a valid type for a function or as the component of a datatype, you must accept all values of `Bool`, that is, `True` and `False`. 
+
+## Data constructor arties
+
+Let's talk about why call them *algebraic*. 
+
+**Arity** refers to the number of arguments of a function or constructor takes. 
+
+We've said that "A type can be thought of as an enumeration of constructors that have zero or more arguments." So it stands to reason that not all dat aconstructors are nullary. Data constructors that take more than one argument are called **products**.
+
+```
+-- nullary
+data Example0 = Example0 deriving (Eq, Show)
+
+-- unary
+data Example1 = Example1 Int deriving (Eq, Show)
+
+-- product of Int and String
+data Example2 = Exampel2 Int String deriving (Eq, Show)
+```
+
+```
+data MyType = MyVal Int deriving (Eq, Show)
+--    [1]      [2]  [3]   [4]       [5]
+```
+
+* **[1]** - Type constructor.
+* **[2]** - Data constructor which takes one type argument, so it is called a unary data constructor. 
+* **[3]** - Type argument to the definition of the data constructor from **[2]**.
+* **[4]** - Deriving clause.
+* **[5]** - Typeclass instances being derived. 
+
+Because `MyVal` has one `Int` argument, a value of type `MyType` must contain one and only one `Int` value.
+
+## What makes these datatypes algebraic?
+
+The **cardinality** of a dataype is the number of possible values it defines. That number could be as small as 1 or as large as infinte.
+
+### newtype
+
+`newtype` can only define a type that have *a single unary data constructor*. 
+
+```
+new Goats = Goats Int deriving (Eq, Show)
+new Cows  = Cows  Int deriving (Eq, Show)
+```
+
+One key contrast between a `newtype` and a type alias is that you can define typeclass instances for `newtype` that differ from the instances for their underlying type.
+
+```
+class TooMany a where
+	tooMany :: a -> Bool
+
+instance TooMany Int where
+	tooMany n = n > 42
+
+instance TooMany Goats where
+	tooMany (Goats n) = n > 42
+```
+
+## Record syntax
+
+```
+data Person = Person { name :: String
+					 , age  :: Int
+					 } deriving (Eq, Show)
+```
+
+## Constructing and deconstructing values
+
+Two things we can do with a value:
+* Generate or construct it.
+* Match on it and consume it.
+
+Construction and deconstruction of values form a duality.
+
+Data is immutable in Haskell, so values carry with them the information about how they were created. We can use that information when we consume or deconstruct the value.
+
+### Deconstructing values
+
+**Catamorphism** is about *deconstructing* lists.
+
+```
+newtype Name  = Name String deriving Show
+newtype Acres = Acres Int deriving Show
+
+data FarmerType = DairyFarmer | WheatFarmer | SoybeanFarmer deriving Show
+data Farmer = Farmer Acres FarmerType deriving Show
+
+-- a basic function to break down and unpack the data inside constructors
+
+isDairyFarmer :: Farmer -> Bool
+isDairyFarmer (Farmer _ _ DairyFarmer) = True
+isDairyFarmer _ = False
+
+-- if we use record syntax
+
+data FarmerRec = FarmerRec { name       :: Name
+                           , acres      :: Acres
+						   , farmerType :: FarmerType
+						   } deriving Show
+
+isDairyFarmerRec :: FarmerRec -> Bool
+isDairyFarmerRec farmer = case farmerType farmer of 
+                          DairyFarmer -> True
+						  _           -> False
+```
+
+## Function type is exponential
+
+Given a function `f:a->b`, the possible inhabitants `b^a`.
