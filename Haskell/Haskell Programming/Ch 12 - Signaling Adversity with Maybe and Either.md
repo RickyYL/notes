@@ -99,4 +99,17 @@ Kind `*` is the kind of all statndard lifted types, while primitive types have t
 
 A lifted type, which includes any datatype you could define yourself, is any that can be inhabited by bottom. Lifted types are represendted by a pointer and include most of the datatypes we've seen and most that you're likely to encounter and use.
 
-Unlifted types are native machine types, represented by a value on the stack rather than a pointer. 
+Unlifted types are native machine types, represented by a value on the stack rather than a pointer. They cannot be inhabited by bottom.
+
+Newtypes are a special case in that they are kind `*` but are unlifted because their representation is identical to that of the type they contain. So the newtype itself is not creating any new pointer beyond that of the type it contains. 
+
+The default kind of concrete, fully-applied datatypes in GHC is kind `*`. 
+
+### Data constructors are functions
+
+Data constructors are really functions. As it happens, they behave just like Haskell functions in that they are curried as well. 
+
+```
+> fmap Just [1,2,3]
+[Just 1, Just 2, Just 3]
+```
