@@ -6,13 +6,6 @@
 	* Exercise
 	* The problem of orphan instances
 * **15.11** Better living through QuickCheck
-***
-
-This chapter will include:
-* Algebras!
-* Laws!
-* Monoids!
-* Semigruops!
 
 ## What we talk about when we talk about algebras
 
