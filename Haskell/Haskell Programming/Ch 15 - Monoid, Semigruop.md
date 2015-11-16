@@ -3,9 +3,11 @@
 ## TODO
 
 * **15.10** Reusing algebras by asking for algebras
-	* Exercise
+	* `Optional` type
 	* The problem of orphan instances
 * **15.11** Better living through QuickCheck
+* Chapter Exercises
+
 
 ## What we talk about when we talk about algebras
 
@@ -103,8 +105,8 @@ The main differences are that using `newtype` *constains* the datatype to having
 
 In summary, why using `newtype`:
 
-* **[Signal intent]** - make it clear that you only intend for it to be a wrapper for the underlying type.
-* **[Improve type safety]** - avoid mixing up many values of the same representation.
+* **Signal intent** - Make it clear that you only intend for it to be a wrapper for the underlying type.
+* **Improve type safety** - Avoid mixing up many values of the same representation.
 * Add different typeclass instances to a type that is otherwise unchanged representationally.
 
 ### More on Sum and Product
@@ -159,10 +161,13 @@ The `Maybe` type actually has more than two possible Monoids:
 
 ## Reusing algebras by asking for algebras
 
-We will now be concerned not with chossing one value out of a set of values but of combining the a values contained within the `Maybe a` type.
+De facto, `Maybe` type has another `Monoid` that combines the `a` values contained within the `Maybe a` type.
+
+First to notice a pattern:
 
 ```
 instance Monoid b => Monoid (a -> b)
+
 instance (Monoid a, Monoid b) => Monoid (a,b)
 instance (Monoid a, Monoid b, Monoid c) => Monoid (a,b,c)
 ```
@@ -183,24 +188,47 @@ Zero is the identity value for addition, while one is the identity value for mul
 
 ### The problem of orphan instances
 
-An orphan instane is when an instance is defined for a datatype and typelcass, but not in the same module as either the declaration of the typeclass or the datatype. If you don't own the typeclass or the datatype, newtype it. 
+TODO
 
 ## Better living through QuickCheck
 
-### Validating associativity with QuickCheck
+TODO
+
+## Semigroup
+
+For a `Semigroup`, the core operation remains binary and associative, but doesn't have an identity value. In that sense, it's a weaker algebra.
 
 ```
-asc :: Eq a => (a -> a -> a) -> a -> a -> a -> Bool
-acs (<>) a b c = a <> (b <> c) == (a <> b) <> c
+class Semigroup a where
+	(<>) :: a -> a -> a
 ```
 
+And we're left with one law: `(a <> b) <> c == a <> (b <> c)`.
+
+Before using `Semigroup` typeclass, install it via `cabal`.
+
+### NonEmpty, a useful datatype
+
+`NonEmpty` list type is oen really useful datatype that can't have a `Monoid` instance but does have a `Semigroup` instance. It's a list datatype that can never be an empty: 
+
 ```
-import Data.Monoid
-import Test.QuickCheck
-
-monoidAssoc :: (Eq m, Monoid m) => m -> m -> m -> Bool
-monoidAssoc a b c = a <> (b <> c) == (a <> b) <> c
+data NonEmpty a = a :| [a] deriving (Eq, Ord, Show)
 ```
 
-## Semigruop
+We cannot write a Monoid for `NonEmpty` list because it has no identity value by design.
 
+### Strength can be wekness
+
+When Haskellers talk about the *strength* of an algebra, they usually mean the number of operations it provides which in turn expands what you can do with any given instance of that algebra without needing to know specifically what type you are working with.
+
+The most obvious way to see that `Monoid` is *stronger* than `Semigroup` is to observe that it has a strict superset of the operations and laws that `Semigroup` procides. Anything which is a `Monoid` is by definition also a semigroup.
+
+As we can see the increasing methods we can do for something, the stricter constrints it limits us:
+
+```
+id :: a -> a
+inc :: Num a => a -> a
+somethingInt :: Int -> Int
+```
+
+When `Monoid` is too strong or more than we need, we can use `Semigroup`. The even weaker typeclass is `Megma` which removes the associativity requirement.
