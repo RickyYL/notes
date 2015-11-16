@@ -1,13 +1,19 @@
-#Ricky's Studying Notes
+# Ricky's Studying Notes
 
-##Reading List
+## Reading List
 
-###Fall 2015
+### Fall 2015
+
+#### Books
 
 * Inside the C++ Object Model
+* Flex and Bison
+* Haskell Programming from First Principles
+* Programming in Haskell
 * Haskell 函数式编程入门
 * Learn You a Haskell for Great Good!
 * Write Yourself a Scheme in 48 Hours
-* Flex and Bison
-* Structure and Interpretation of Computer Programs
-* Haskell Programming from First Principles
+
+#### Open Courses
+
+* [**FP101x** Introduction to Functional Programming - edX](https://courses.edx.org/courses/course-v1:DelftX+FP101x+3T2015/info)
