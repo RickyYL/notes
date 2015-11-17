@@ -1,5 +1,12 @@
 # Functor
 
+## TODO
+
+* **16.9** - QuickCheck Functor instances
+* **16.10** - QuickCheck Exercises
+* **16.14** - IO Functor
+* **16.15** - Waht if we want to do something different?
+
 The general concept here remains the same: we abstract out a common pattern, make certain it ollows some laws, give it an awesome name and wonder how we ever lived without it. Understanding Functor and Applicative is important to a deep understanding of Monad.
 
 Functor is all about a pattern of mapping over structure. Functors are combinators: they take a sentence or phrase as input and produce a sentence or phrase as an output, with some logical operation applied to the whole. 
@@ -145,3 +152,174 @@ instance Functor CountingBad where
 	fmap f (Heisenberg n a) = Heisenberg n (f a)
 ```
 
+## Commonly used functors
+
+```
+> let replaceWithP = const 'p'
+> fmap replaceWithP (10, 20)
+(10, 'p')
+> fmap replaceWithP (10, "woo")
+(10, 'p')
+```
+
+We'll talk about why it skips the first value in the tuple in a bit. It has to do with the kindedness of tuples and the kindedness of the `f` in Functor.
+
+```
+> fmap (+1) negate 10
+-9
+> fmap (+1) negate -10
+11
+```
+
+This is to say, `fmap f g = f . g`
+
+### The functors are stacked and that's a fact
+
+```
+> fmap rwp lms
+"ppp"
+
+> (fmap.fmap) rwp lms
+[Just 'p',Nothing,Just 'p']
+
+> (fmap.fmap.fmap) rwp lms
+[Just "ppp",Nothing,Just "pppppp"]
+```
+
+```
+lms :: [Maybe [Char]]
+lms = [Just "Ave", Nothing, Just "woohoo"]
+
+replaceWithP :: b -> Char
+replaceWithP = const 'p'
+
+replaceWithP' :: [Maybe [Char]] -> Char
+replaceWithP' = replaceWithP
+
+liftedReplace :: Functor f => f a -> f Char
+liftedReplace = fmap replaceWithP
+
+liftedReplace' :: [Maybe [Char]] -> [Char]
+liftedReplace' = liftedReplace
+```
+
+> See `ReplacementExperiment.hs` for more detail information.
+
+We notice that the `[]` around `Char` is the *f* of `f Char`, or the structure we lifted over. The *f* of `f a` is the outermost `[]` in `[Maybe [Char]]`. 
+
+## Mapping over the structure to transform the unapplied type argument
+
+Several things we've alread known:
+
+* We've seen that
+ * *f* must be a higher-kinded type
+ * Functor instances must abide by two laws
+* We know that goal of fmapping is to leave the outer structure intact while transforming the type arguments inside.
+* We notice that when we `fmap` over a *tuple* or a *either*, it only transforms the second argument.
+
+When we have a datatype that has kind higher than `* -> *`, we must first partialy fill it to make it `* -> *`. See the following example:
+
+```
+data Two a b = Two a b deriving (Eq, Show)
+data Or a b = First a | Second b deriving (Eq, Show)
+
+instance Functor (Two a) where
+    fmap f (Two a b) = Two a (f b) 
+
+instance Functor (Or a) where
+    fmap _ (First a)  = First a
+    fmap f (Second b) = Second (f b)
+```
+
+## QuickCheck Functor instances
+
+## Ignoring possibilities
+
+The Functor instances of `Maybe`, `Either` etc. are handy for times you intentd to ignore the left cases, which are typically your error or failures cases. Because `fmap` doesn't touch those cases, you can map your function right to the valus that you intentd to work with and ignore those failure cases.
+
+> See `IgnoreCases.hs`
+
+## A somewhat surprising functor
+
+Let's see a datatype called `Constant`.
+
+```
+newtype Constant a b = Constant { getConstant :: a } deriving (Eq, Show)
+```
+
+One thing we notice is that the type parameter `b` is a phantom type. It has no corresponding witness at the value/term level. We will explore this later.
+
+Dispite `b` being a phatom type, though, Constant is kind `* -> * -> *`, and that is not a valid Functor. So we must partialy fill it:
+
+```
+instance Functor (Constant m) where
+	fmap _ (Constant v) = Constant v
+```
+
+We can see whatever we `fmap` over Constant, it reamins constant. It's a useful and lawful Functor.
+
+## More structure, more functors
+
+```
+data Wrap f a = Wrap (f a) deriving (Eq, Show)
+
+instance Functor f => Functor (Wrap f) where
+    fmap f (Wrap fa) = Wrap (fmap f fa)
+```
+
+## IO Functor
+
+The `IO` type is an abstract datatype; there are no data constructors that you're permitted to match on, so the typeclasses `IO` provides are the only way you can work with values of type `IO a`. 
+
+```
+getInt :: IO Int
+getInt = fmap read getLine
+```
+
+## Waht if we want to do something different?
+
+We talked about Functor as a means of lifting functions over structure so that we may transform only the contents, leaving the structrue alone. Waht if we wanted to transform only the structure and leave the type argument to that structure or type constructor alone? With this, we've arrived at *natural transformations*. We can attempt to put together a type to express what we want:
+
+```
+nat :: (f -> g) -> f a -> g a
+```
+
+Here `f` and `g` are higher-kinded types. But that makes it impossible to leagally use it. We need more compiler features to support this:
+
+```
+{-# LANGUAGE RankNTypes #-}
+
+type Nat f g = forall a. f a -> g a
+```
+
+So we're doing the opposite of what a Functor does. We're transforming the structrue, preserving the values as they were. 
+
+## Functors in Haskell are unique for a given datatype
+
+In haskell, Functor instances will be unique for a given datatype. It's not true for Monoid, though. 
+
+It's impossible to do so in Haskell:
+
+```
+data Tuple a b = Tuple a b deriving (Eq, Show)
+
+instance Functor (Tuple ? b) where
+fmap f (Tuple a b) = Tuple (f a) b
+```
+
+We can do this in two ways:
+* flip the arguments to the type constructor
+* make a new datatype using a `Flip` newtype
+
+```
+{-# LANGUAGE FlexibleInstance #-}
+
+module FlipFunctor where
+
+data Tuple a b = Tuple a b deriving (Eq, Show)
+
+newtype Flip f a b = Flip (f b a) deriving (Eq, Show)
+
+instance Functor (Flip Tuple a) where
+	fmap f (Flip (Tuple a b)) = Flip $ Tuple (f a) b
+```
