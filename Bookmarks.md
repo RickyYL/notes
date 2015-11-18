@@ -8,6 +8,9 @@
 * [LearnHaskell - Github](https://github.com/bitemyapp/learnhaskell)
 * [如何学习 Haskell - Zhihu](http://www.zhihu.com/question/20193745#answer-10310920)
 
+## Graphics
+* [系统的学习计算机图形学，有哪些不同阶段的书籍的推荐？](http://www.zhihu.com/question/26720808)
+
 ## Other stuff related to CMPSC
 * [Python 爬虫进阶](http://www.zhihu.com/question/35461941#answer-21081654)
 
