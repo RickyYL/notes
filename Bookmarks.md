@@ -7,6 +7,11 @@
 * [Functions are Functors in Haskell - Stackoverflow](http://stackoverflow.com/questions/10294272/confused-about-function-as-instance-of-functor-in-haskell)
 * [LearnHaskell - Github](https://github.com/bitemyapp/learnhaskell)
 * [如何学习 Haskell - Zhihu](http://www.zhihu.com/question/20193745#answer-10310920)
+* [Haskell - Zhihu](http://www.zhihu.com/topic/19593103)
+
+## Compiling
+* [如何学习编译原理？](http://www.zhihu.com/question/21515496#answer-9903125)
+* [如何愉快地写个小parser](http://zhuanlan.zhihu.com/prattle/20178871)
 
 ## Graphics
 * [系统的学习计算机图形学，有哪些不同阶段的书籍的推荐？](http://www.zhihu.com/question/26720808)
