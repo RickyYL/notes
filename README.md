@@ -18,3 +18,4 @@
 
 * [**FP101x** Introduction to Functional Programming - edX](https://courses.edx.org/courses/course-v1:DelftX+FP101x+3T2015/info)
 * [**CS193p** iOS Develop with Swift - iTunesU](https://itunes.apple.com/us/course/developing-ios-8-apps-swift/id961180099)
+* [Introduction to Big Data - Coursera](https://www.coursera.org/learn/intro-to-big-data/)

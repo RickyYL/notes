@@ -24,6 +24,8 @@ liftA2 :: Applicative f => (a -> b -> c)      -> f a -> f b -> f c
 liftA3 :: Applicative f => (a -> b -> c -> d) -> f a -> f b -> f c -> f d
 ```
 
+De facto, `liftA` is just `fmap`, and `liftA2` and `liftA3` are just `fmap` varation with more arguments. 
+
 ## Functor vs. Applicative
 
 We notice that
