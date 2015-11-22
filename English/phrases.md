@@ -10,3 +10,11 @@
 ## French
 
 * **cri de coeur**, meaning approximately "a cry from the heart"
+
+## Slang
+
+* That's what she said.
+
+## phrases
+
+* with all due respect to
