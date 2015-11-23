@@ -9,6 +9,8 @@
 * [如何学习 Haskell - Zhihu](http://www.zhihu.com/question/20193745#answer-10310920)
 * [Haskell - Zhihu](http://www.zhihu.com/topic/19593103)
 * [Brian Beckman: Don't fear the Monad - YouTube](https://www.youtube.com/watch?v=ZhuHCtR3xq8)
+* [Getting started with Haskell - Stackoverflow](http://stackoverflow.com/questions/1012573/getting-started-with-haskell/1016986#1016986)
+
 ## Compiling
 * [如何学习编译原理？](http://www.zhihu.com/question/21515496#answer-9903125)
 * [如何愉快地写个小parser](http://zhuanlan.zhihu.com/prattle/20178871)
