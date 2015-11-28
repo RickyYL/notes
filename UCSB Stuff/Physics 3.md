@@ -12,12 +12,12 @@
 * 圆环电场积分
 * X >> C, X << C 等情况下的逼近技巧
 
-## Constants
 
-* charge of electron = 1.60217662 × 10^-19 C
-* mass of electron = 9.10938356 × 10^-31 kg
-* mass of proton = 1.6726219 × 10^-27 kg
-* k = 8.988 × 10^9 m/F
+## TODO 
+
+### Exercises
+
+* 22.44 - 22.67
 
 ## Good Exercises
 
@@ -29,6 +29,10 @@
 
 
 * 22.21 - Sphere with cavity containing a point charge
+
+
+* 23.27, 23.28 - Spherical shells potential
+* 23.29 - Ring, charge and SHM
 
 ## Plan
 
