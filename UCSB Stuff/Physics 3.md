@@ -34,6 +34,10 @@
 * 23.27, 23.28 - Spherical shells potential
 * 23.29 - Ring, charge and SHM
 
+
+* 25.24 - Hollow cylinder resistivity
+* 25.32 - Double emf
+
 ## Plan
 
 * 11.23 - Ch 21
