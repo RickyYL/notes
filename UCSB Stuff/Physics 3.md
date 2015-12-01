@@ -38,6 +38,9 @@
 * 25.24 - Hollow cylinder resistivity
 * 25.32 - Double emf
 
+
+* 25.61 - Telling in series or in parallel
+
 ## Plan
 
 * 11.23 - Ch 21
